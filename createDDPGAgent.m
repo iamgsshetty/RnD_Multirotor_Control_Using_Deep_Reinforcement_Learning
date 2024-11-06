@@ -1,40 +1,59 @@
 function agent = createDDPGAgent(numObs, obsInfo, numAct, actInfo, Ts)
-% Walking Robot -- DDPG Agent Setup Script
-% Copyright 2024 The MathWorks, Inc.
+    % createDDPGAgent Creates a DDPG agent with specified observation and action space configurations.
+    %
+    % Inputs:
+    %   numObs - Number of observations
+    %   obsInfo - Observation space information
+    %   numAct - Number of actions
+    %   actInfo - Action space information
+    %   Ts - Sample time for the agent
+    %
+    % Outputs:
+    %   agent - Configured DDPG agent
 
-%% Create the actor and critic networks using the createNetworks helper function
-[criticNetwork,~,actorNetwork, ~] = createNetworks(numObs,numAct);
+    %% Create the actor and critic networks using the createNetworks helper function
+    [criticNetwork, ~, actorNetwork, ~] = createNetworks(numObs, numAct);
 
-%% Specify options for the critic and actor representations using rlOptimizerOptions
-criticOptions = rlOptimizerOptions('Optimizer','adam','LearnRate',1e-3,... 
-                                        'GradientThreshold',1);
-actorOptions = rlOptimizerOptions('Optimizer','adam','LearnRate',1e-3,...
-                                       'GradientThreshold',1);
+    %% Define optimizer options for both the critic and actor networks
+    criticOptions = rlOptimizerOptions('Optimizer', 'adam', ...
+                                       'LearnRate', 1e-3, ...
+                                       'GradientThreshold', 1);
+    actorOptions = rlOptimizerOptions('Optimizer', 'adam', ...
+                                      'LearnRate', 1e-3, ...
+                                      'GradientThreshold', 1);
 
-%% Create critic and actor representations using specified networks and
-% options
-critic = rlQValueFunction(criticNetwork,obsInfo,actInfo,'ObservationInputNames','observation','ActionInputNames','action');
-actor  = rlContinuousDeterministicActor(actorNetwork,obsInfo,actInfo);
+    %% Create critic and actor representations
+    % Define the critic as a Q-value function
+    critic = rlQValueFunction(criticNetwork, obsInfo, actInfo, ...
+                              'ObservationInputNames', 'observation', ...
+                              'ActionInputNames', 'action');
 
-%% Specify DDPG agent options
-agentOptions = rlDDPGAgentOptions;
-agentOptions.SampleTime = Ts;
-agentOptions.DiscountFactor = 0.99;
-agentOptions.MiniBatchSize = 256;
-agentOptions.ExperienceBufferLength = 1e6;
-agentOptions.TargetSmoothFactor = 5e-3;
+    % Define the actor as a continuous deterministic policy
+    actor = rlContinuousDeterministicActor(actorNetwork, obsInfo, actInfo);
 
-agentOptions.NumEpoch = 3;
-agentOptions.MaxMiniBatchPerEpoch = 100;
-agentOptions.LearningFrequency = -1;
-agentOptions.PolicyUpdateFrequency = 1;
-agentOptions.TargetUpdateFrequency = 1;
+    %% Specify options for the DDPG agent
+    agentOptions = rlDDPGAgentOptions;
+    agentOptions.SampleTime = Ts;
+    agentOptions.DiscountFactor = 0.99;
+    agentOptions.MiniBatchSize = 256;
+    agentOptions.ExperienceBufferLength = 1e6;
+    agentOptions.TargetSmoothFactor = 5e-3;
 
-agentOptions.NoiseOptions.MeanAttractionConstant = 1;
-agentOptions.NoiseOptions.StandardDeviation = 0.1;
+    % Training-related options
+    agentOptions.NumEpoch = 3;
+    agentOptions.MaxMiniBatchPerEpoch = 100;
+    agentOptions.LearningFrequency = -1;
+    agentOptions.PolicyUpdateFrequency = 1;
+    agentOptions.TargetUpdateFrequency = 1;
 
-agentOptions.ActorOptimizerOptions = actorOptions;
-agentOptions.CriticOptimizerOptions = criticOptions;
+    % Exploration noise settings
+    agentOptions.NoiseOptions.MeanAttractionConstant = 1;
+    agentOptions.NoiseOptions.StandardDeviation = 0.1;
 
-%% Create agent using specified actor representation, critic representation and agent options
-agent = rlDDPGAgent(actor,critic,agentOptions);
+    % Assign optimizer options to the agent
+    agentOptions.ActorOptimizerOptions = actorOptions;
+    agentOptions.CriticOptimizerOptions = criticOptions;
+
+    %% Create the DDPG agent using the actor and critic representations
+    agent = rlDDPGAgent(actor, critic, agentOptions);
+end
