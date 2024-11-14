@@ -43,6 +43,8 @@ These visualization and evaluation scripts provide insights into the performance
 ### 8. `waypoint_followed.slx`
 This Simulink model is used for training the multirotor aerial robot. It provides a simulated environment and control architecture for testing and training the reinforcement learning agents in MATLAB/Simulink.
 
+### 9. `main_th_att_control_pid.m`
+Matlab code to test agent in ROS Gazebo environment. arm_uav.mpathdef.m and set_to_offboard_mode.m are suppoting codes to run the main file.
 ---
 
 ## Usage Instructions
